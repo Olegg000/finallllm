@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.main3.common.AppLogger
 import com.example.net.types.ResultType
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -57,6 +58,7 @@ abstract class BaseViewModel<STATE>(val initState: STATE): ViewModel() {
             try {
                 loadingCount.value++
                 _error.value = null
+                delay(5000L)
 
                 val res = call().getOrThrow()
 

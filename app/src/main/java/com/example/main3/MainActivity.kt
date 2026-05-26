@@ -17,7 +17,7 @@ import com.example.net.common.ContextHolder
 import com.example.ui.theme.TextB
 
 class MainActivity : ComponentActivity() {
-    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ContextHolder.init(this)
