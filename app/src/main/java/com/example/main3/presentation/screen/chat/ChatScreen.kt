@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,18 +22,15 @@ import com.example.main3.R
 import com.example.ui.components.Button
 import com.example.ui.components.ButtonDef
 import com.example.ui.components.InputDef
-import com.example.ui.theme.TextB
-
 
 @Composable
 fun ChatScreen(
-    vm: ChatViewModel = viewModel()
+    viewModel: ChatViewModel = viewModel()
 ) {
-
     var input by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
-        vm.init()
+        viewModel.init()
     }
 
     Scaffold(
@@ -45,20 +43,21 @@ fun ChatScreen(
                         painterResource(R.drawable.ic_launcher_foreground),
                         contentDescription = null,
                         modifier = Modifier.clickable {
-                            vm.send(input.ifEmpty { return@clickable })
+                            viewModel.send(input.ifEmpty { return@clickable })
                             input = ""
-                        })
+                        }
+                    )
                 }
             )
         }
-    ) { inne ->
+    ) { inn ->
         LazyColumn(Modifier
-            .padding(inne)
+            .padding(inn)
             .padding(20.dp)) {
-            items(vm.messages) {
+            items(viewModel.messages) {
                 Bubble(it)
             }
-            if (vm.isLoading) {
+            if (viewModel.isLoading) {
                 item {
                     Bubble(
                         Message(
@@ -69,13 +68,17 @@ fun ChatScreen(
                     )
                 }
             }
-            vm.error?.let {
+            viewModel.error?.let {
                 item {
-                    TextB(it, color = Color.Red)
-                    ButtonDef("Retry", { vm.repeat() }, Button.Error)
+                    Text(it, color = Color.Red)
+                    ButtonDef(
+                        "repeat", {
+                            viewModel.repeat()
+                        },
+                        Button.Error
+                    )
                 }
             }
         }
     }
-
 }

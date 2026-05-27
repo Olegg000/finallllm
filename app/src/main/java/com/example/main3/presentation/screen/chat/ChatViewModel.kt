@@ -1,6 +1,5 @@
 package com.example.main3.presentation.screen.chat
 
-import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -14,19 +13,26 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-class ChatViewModel(): ViewModel() {
-    private val format = DateTimeFormatter.ofPattern("hh:mm a", Locale.US)
-    fun now() = LocalTime.now().format(format)
+class ChatViewModel() : ViewModel() {
+    val formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US)
+    fun now() = LocalTime.now().format(formatter)
 
-    var isLoading by mutableStateOf(false)
     var error by mutableStateOf<String?>(null)
+    var isLoading by mutableStateOf(false)
     val messages = mutableStateListOf<Message>()
 
     val llm = runCatching {
+        ContextHolder.getC().assets.open("qwen.task").use {
+            it.copyTo(
+                File("/data/data/com.example.main3/files/qwen.task").outputStream()
+            )
+        }
+
         LlmInference.createFromOptions(
             ContextHolder.getC(),
             LlmInference.LlmInferenceOptions.builder()
@@ -36,31 +42,28 @@ class ChatViewModel(): ViewModel() {
     }.getOrNull()
 
     fun init() {
-        send(ChatConf.firstPromt,true)
+        send(ChatConfig.firstPromt, isFirst = true)
     }
 
     fun send(text: String, isFirst: Boolean = false) {
-        val model = llm ?: run {
-            error = "no llm init"
-            return
-        }
-        error = null
-        isLoading = true
+        val model = llm ?: run { error = "no llm init"; return }
         if (!isFirst) {
-            messages += Message(now(),text,false)
+            messages += Message(now(), text, false)
         }
+        isLoading = true
+        error = null
         viewModelScope.launch {
-            delay(5000L)
+            delay(5000)
             runCatching {
                 withContext(Dispatchers.Default) {
                     model.generateResponse(text)
                 }
             }.onSuccess {
-                messages += Message(now(),it,true)
+                messages += Message(now(), it, true)
             }.onFailure {
                 error = it.message
             }
-            isLoading=false
+            isLoading = false
         }
     }
 
